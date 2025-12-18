@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL 编码/解码工具 Pro</title>
+    <title>URI 编码/解码工具</title>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -34,11 +34,15 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 40px 20px;
             min-height: 100vh;
         }
 
-        .container { width: 100%; max-width: 850px; }
+        /* 容器宽度设定为 1200px */
+        .container { 
+            width: 100%; 
+            max-width: 1200px; 
+        }
 
         header {
             display: flex;
@@ -49,28 +53,28 @@
 
         .card {
             background: var(--card-bg);
-            padding: 24px;
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             border: 1px solid var(--border-color);
         }
 
         .controls {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 25px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 8px 14px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 8px;
             border: 1px solid var(--border-color);
             background: var(--card-bg);
             color: var(--text-main);
             cursor: pointer;
+            font-weight: 600;
             font-size: 14px;
-            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -79,41 +83,56 @@
         .btn:hover { background: var(--border-color); }
         .btn.primary { background: var(--primary-color); color: white; border: none; }
         .btn.primary:hover { background: var(--primary-hover); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        /* 维持上下堆叠布局 */
+        .grid { 
+            display: flex;
+            flex-direction: column;
+            gap: 24px; 
+        }
 
-        .field-group { display: flex; flex-direction: column; gap: 8px; }
+        .field-group { display: flex; flex-direction: column; gap: 10px; }
 
         .label-bar {
             display: flex;
             justify-content: space-between;
-            font-size: 0.875rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
+            font-weight: 500;
         }
 
         textarea {
             width: 100%;
-            height: 150px;
-            padding: 12px;
+            height: 260px; /* 适当增加高度 */
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             background: var(--input-bg);
             color: var(--text-main);
-            font-family: 'Fira Code', monospace;
-            font-size: 13px;
-            resize: vertical;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 15px; /* 略微调大字号 */
+            line-height: 1.6;
+            resize: vertical; /* 允许垂直拉伸 */
             outline: none;
         }
 
-        textarea:focus { border-color: var(--primary-color); }
+        textarea:focus { 
+            border-color: var(--primary-color); 
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); 
+        }
 
-        .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 4px; display: none; }
+        .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 8px; display: none; }
 
-        .examples { margin-top: 20px; font-size: 0.875rem; border-top: 1px solid var(--border-color); padding-top: 15px;}
-        .example-link { color: var(--primary-color); text-decoration: none; margin-right: 15px; cursor: pointer; }
+        .examples { 
+            margin-top: 25px; 
+            padding-top: 20px; 
+            border-top: 1px solid var(--border-color); 
+            font-size: 0.9rem; 
+        }
+        .example-link { color: var(--primary-color); text-decoration: none; margin-right: 20px; cursor: pointer; font-weight: 500; }
+        .example-link:hover { text-decoration: underline; }
 
-        .shortcuts { margin-top: 24px; font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+        .shortcuts { margin-top: 30px; font-size: 0.8rem; color: var(--text-muted); text-align: center; }
     </style>
 </head>
 <body>
@@ -121,45 +140,44 @@
 <div class="container">
     <header>
         <h1>URL 转换器</h1>
-        <button class="btn" id="themeToggle">🌓 主题切换</button>
+        <button class="btn" id="themeToggle" title="切换深浅色模式">🌓 切换主题</button>
     </header>
 
     <div class="card">
         <div class="controls">
-            <button class="btn primary" id="modeBtn" onclick="toggleMode()">模式: 编码 (Encode)</button>
-            <button class="btn" id="scopeBtn" onclick="toggleScope()" title="URI 模式不会对 : / ? # & = 等符号编码">范围: 全字符编码</button> 
-            <button class="btn" onclick="clearAll()">清空</button>
-            <button class="btn" id="copyBtn" onclick="copyOutput()">复制结果</button>
+            <button class="btn primary" id="modeBtn" onclick="toggleMode()">当前模式: 编码 (Encode)</button>
+            <button class="btn" onclick="clearAll()">✨ 清空全部</button>
+            <button class="btn" id="copyBtn" onclick="copyOutput()">📋 复制结果</button>
         </div>
 
         <div class="grid">
             <div class="field-group">
                 <div class="label-bar">
-                    <span id="inputLabel">输入：</span>
-                    <span id="inputCharCount">字符: 0</span>
+                    <span>输入需要处理的内容 (Source)：</span>
+                    <span id="inputCharCount">字符数: 0</span>
                 </div>
-                <textarea id="inputText" placeholder="输入内容..." spellcheck="false"></textarea>
+                <textarea id="inputText" placeholder="在此粘贴 URL 内容... (URI 模式将保留 : / ? # & = 等符号)" spellcheck="false"></textarea>
             </div>
 
             <div class="field-group">
                 <div class="label-bar">
-                    <span>处理结果：</span>
-                    <span id="outputCharCount">字符: 0</span>
+                    <span>处理结果 (Result)：</span>
+                    <span id="outputCharCount">字符数: 0</span>
                 </div>
-                <textarea id="outputText" readonly placeholder="实时结果..." spellcheck="false"></textarea>
-                <div id="errorMessage" class="error-msg">❌ 格式错误：无法解析 URL 编码</div>
+                <textarea id="outputText" readonly placeholder="结果将实时显示在这里..." spellcheck="false"></textarea>
+                <div id="errorMessage" class="error-msg">❌ 格式错误：解析失败，请检查输入内容</div>
             </div>
         </div>
 
         <div class="examples">
-            <span style="color: var(--text-muted)">快速测试：</span>
-            <span class="example-link" onclick="loadExample('https://google.com/search?q=测试')">完整 URL</span>
-            <span class="example-link" onclick="loadExample('a=1&b=测试')">参数字符串</span>
+            <span style="color: var(--text-muted)">常用快速测试：</span>
+            <span class="example-link" onclick="loadExample('https://google.com/search?q=测试内容&category=工具')">完整 URL</span>
+            <span class="example-link" onclick="loadExample('path/测试/file?id=123#header')">相对路径与锚点</span>
         </div>
     </div>
 
     <div class="shortcuts">
-        快捷键：Ctrl+Enter 复制 | Alt+S 切换模式 | Alt+D 切换范围 | Alt+C 清空
+        URI 编码：对非 ASCII 字符编码，保留 URL 结构符号 | 快捷键：Alt+S 切换编解码 | Ctrl+Enter 复制
     </div>
 </div>
 
@@ -167,41 +185,28 @@
     const inputText = document.getElementById('inputText');
     const outputText = document.getElementById('outputText');
     const modeBtn = document.getElementById('modeBtn');
-    const scopeBtn = document.getElementById('scopeBtn');
     const inputCount = document.getElementById('inputCharCount');
     const outputCount = document.getElementById('outputCharCount');
     const errorMsg = document.getElementById('errorMessage');
 
-    let currentMode = 'encode'; // 'encode' | 'decode'
-    let encodeScope = 'component'; // 'component' (全编码) | 'uri' (不编码特殊符号)
+    let currentMode = 'encode';
 
-    // 模式切换
+    // 编解码模式切换
     function toggleMode() {
         currentMode = currentMode === 'encode' ? 'decode' : 'encode';
-        modeBtn.innerText = `模式: ${currentMode === 'encode' ? '编码 (Encode)' : '解码 (Decode)'}`;
-        
-        // 解码模式下禁用范围选择按钮
-        scopeBtn.disabled = (currentMode === 'decode');
+        modeBtn.innerText = `当前模式: ${currentMode === 'encode' ? '编码 (Encode)' : '解码 (Decode)'}`;
         process();
     }
 
-    // 核心逻辑：切换编码范围
-    function toggleScope() {
-        if (currentMode === 'decode') return;
-        encodeScope = encodeScope === 'component' ? 'uri' : 'component';
-        scopeBtn.innerText = `范围: ${encodeScope === 'component' ? '全字符编码' : '保留特殊符号'}`;
-        process();
-    }
-
-    // 处理函数
+    // 核心转换逻辑
     function process() {
         const input = inputText.value;
-        inputCount.innerText = `字符: ${input.length}`;
+        inputCount.innerText = `字符数: ${input.length}`;
         errorMsg.style.display = 'none';
 
         if (!input) {
             outputText.value = '';
-            outputCount.innerText = '字符: 0';
+            outputCount.innerText = '字符数: 0';
             return;
         }
 
@@ -209,62 +214,64 @@
             const lines = input.split('\n');
             const result = lines.map(line => {
                 if (currentMode === 'encode') {
-                    // 使用 encodeURI 不会对 : / ? @ & = 等符号编码
-                    // 使用 encodeURIComponent 则会全部编码
-                    return encodeScope === 'component' 
-                        ? encodeURIComponent(line) 
-                        : encodeURI(line);
+                    // 使用 encodeURI 从而保留特殊符号
+                    return encodeURI(line);
                 } else {
+                    // 解码，同时处理常见的 + 号变空格问题
                     return decodeURIComponent(line.replace(/\+/g, ' '));
                 }
             }).join('\n');
 
             outputText.value = result;
-            outputCount.innerText = `字符: ${result.length}`;
+            outputCount.innerText = `字符数: ${result.length}`;
         } catch (e) {
             errorMsg.style.display = 'block';
-            outputText.value = '解析错误，请检查输入格式。';
+            outputText.value = '解析失败，请检查输入格式。';
         }
     }
 
-    // 功能辅助
+    // 清空
     function clearAll() {
         inputText.value = '';
         process();
         inputText.focus();
     }
 
+    // 复制
     async function copyOutput() {
         if (!outputText.value) return;
         try {
             await navigator.clipboard.writeText(outputText.value);
             const btn = document.getElementById('copyBtn');
             const oldText = btn.innerText;
-            btn.innerText = '✅ 已复制';
-            setTimeout(() => btn.innerText = oldText, 1500);
-        } catch (err) { alert('复制失败'); }
+            btn.innerText = '✅ 已复制内容';
+            setTimeout(() => btn.innerText = oldText, 1200);
+        } catch (err) { alert('无法访问剪贴板，请手动复制'); }
     }
 
+    // 加载示例
     function loadExample(val) {
         inputText.value = val;
         process();
     }
 
-    // 事件监听
+    // 实时监听输入
     inputText.addEventListener('input', process);
     
+    // 主题切换逻辑
     document.getElementById('themeToggle').addEventListener('click', () => {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
     });
 
+    // 全局快捷键
     window.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'Enter') copyOutput();
         if (e.altKey && e.key.toLowerCase() === 's') toggleMode();
-        if (e.altKey && e.key.toLowerCase() === 'd') toggleScope();
         if (e.altKey && e.key.toLowerCase() === 'c') clearAll();
     });
 
+    // 页面加载后自动聚焦输入框
     window.onload = () => inputText.focus();
 </script>
 
