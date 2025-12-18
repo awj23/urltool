@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL 编码/解码工具</title>
+    <title>URL 编码/解码工具 Pro</title>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -16,7 +16,6 @@
             --input-bg: #ffffff;
         }
 
-        /* 深色模式变量 */
         [data-theme="dark"] {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
@@ -26,10 +25,7 @@
             --input-bg: #0f172a;
         }
 
-        * {
-            box-sizing: border-box;
-            transition: background-color 0.3s, color 0.3s;
-        }
+        * { box-sizing: border-box; transition: background-color 0.2s; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -42,10 +38,7 @@
             min-height: 100vh;
         }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-        }
+        .container { width: 100%; max-width: 850px; }
 
         header {
             display: flex;
@@ -53,8 +46,6 @@
             align-items: center;
             margin-bottom: 24px;
         }
-
-        h1 { font-size: 1.5rem; margin: 0; }
 
         .card {
             background: var(--card-bg);
@@ -64,21 +55,21 @@
             border: 1px solid var(--border-color);
         }
 
-        /* 控制栏布局 */
         .controls {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
             background: var(--card-bg);
             color: var(--text-main);
             cursor: pointer;
+            font-size: 14px;
             font-weight: 500;
             display: flex;
             align-items: center;
@@ -86,25 +77,13 @@
         }
 
         .btn:hover { background: var(--border-color); }
-        .btn.primary {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-        }
+        .btn.primary { background: var(--primary-color); color: white; border: none; }
         .btn.primary:hover { background: var(--primary-hover); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 文本区域 */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
 
-        .field-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .field-group { display: flex; flex-direction: column; gap: 8px; }
 
         .label-bar {
             display: flex;
@@ -115,49 +94,26 @@
 
         textarea {
             width: 100%;
-            height: 160px;
+            height: 150px;
             padding: 12px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             background: var(--input-bg);
             color: var(--text-main);
-            font-family: monospace;
-            font-size: 14px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
             resize: vertical;
             outline: none;
         }
 
-        textarea:focus { border-color: var(--primary-color); ring: 2px var(--primary-color); }
+        textarea:focus { border-color: var(--primary-color); }
 
-        .error-msg {
-            color: #ef4444;
-            font-size: 0.85rem;
-            margin-top: 4px;
-            display: none;
-        }
+        .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 4px; display: none; }
 
-        .examples {
-            margin-top: 20px;
-            font-size: 0.875rem;
-        }
+        .examples { margin-top: 20px; font-size: 0.875rem; border-top: 1px solid var(--border-color); padding-top: 15px;}
+        .example-link { color: var(--primary-color); text-decoration: none; margin-right: 15px; cursor: pointer; }
 
-        .example-link {
-            color: var(--primary-color);
-            text-decoration: none;
-            margin-right: 10px;
-            cursor: pointer;
-        }
-
-        .shortcuts {
-            margin-top: 24px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-align: center;
-        }
-
-        @media (min-width: 640px) {
-            .grid { grid-template-columns: 1fr; }
-        }
+        .shortcuts { margin-top: 24px; font-size: 0.75rem; color: var(--text-muted); text-align: center; }
     </style>
 </head>
 <body>
@@ -165,43 +121,45 @@
 <div class="container">
     <header>
         <h1>URL 转换器</h1>
-        <button class="btn" id="themeToggle" title="切换主题">🌓 模式切换</button>
+        <button class="btn" id="themeToggle">🌓 主题切换</button>
     </header>
 
     <div class="card">
         <div class="controls">
-            <button class="btn primary" id="modeBtn" onclick="toggleMode()">当前模式: 编码 (Encode)</button>
-            <button class="btn" onclick="clearAll()">清空全部</button>
-            <button class="btn" onclick="copyOutput()">复制结果</button>
+            <button class="btn primary" id="modeBtn" onclick="toggleMode()">模式: 编码 (Encode)</button>
+            <button class="btn" id="scopeBtn" onclick="toggleScope()" title="URI 模式不会对 : / ? # & = 等符号编码">范围: 全字符编码</button> 
+            <button class="btn" onclick="clearAll()">清空</button>
+            <button class="btn" id="copyBtn" onclick="copyOutput()">复制结果</button>
         </div>
 
         <div class="grid">
             <div class="field-group">
                 <div class="label-bar">
-                    <span id="inputLabel">输入需要处理的内容：</span>
-                    <span id="inputCharCount">字符数: 0</span>
+                    <span id="inputLabel">输入：</span>
+                    <span id="inputCharCount">字符: 0</span>
                 </div>
-                <textarea id="inputText" placeholder="在这里粘贴或输入内容..." spellcheck="false"></textarea>
+                <textarea id="inputText" placeholder="输入内容..." spellcheck="false"></textarea>
             </div>
 
             <div class="field-group">
                 <div class="label-bar">
                     <span>处理结果：</span>
-                    <span id="outputCharCount">字符数: 0</span>
+                    <span id="outputCharCount">字符: 0</span>
                 </div>
-                <textarea id="outputText" placeholder="结果将实时显示在这里..." spellcheck="false"></textarea>                <div id="errorMessage" class="error-msg">❌ 格式错误：无法解析输入的 URL 编码</div>
+                <textarea id="outputText" readonly placeholder="实时结果..." spellcheck="false"></textarea>
+                <div id="errorMessage" class="error-msg">❌ 格式错误：无法解析 URL 编码</div>
             </div>
         </div>
 
         <div class="examples">
-            <span style="color: var(--text-muted)">常用示例：</span>
-            <span class="example-link" onclick="loadExample('https://google.com/search?q=测试')">带中文URL</span>
-            <span class="example-link" onclick="loadExample('key1=val 1&key2=val@2')">参数字符串</span>
+            <span style="color: var(--text-muted)">快速测试：</span>
+            <span class="example-link" onclick="loadExample('https://google.com/search?q=测试')">完整 URL</span>
+            <span class="example-link" onclick="loadExample('a=1&b=测试')">参数字符串</span>
         </div>
     </div>
 
     <div class="shortcuts">
-        快捷键：Ctrl+Enter 复制结果 | Alt+S 切换模式 | Alt+C 清空
+        快捷键：Ctrl+Enter 复制 | Alt+S 切换模式 | Alt+D 切换范围 | Alt+C 清空
     </div>
 </div>
 
@@ -209,30 +167,41 @@
     const inputText = document.getElementById('inputText');
     const outputText = document.getElementById('outputText');
     const modeBtn = document.getElementById('modeBtn');
+    const scopeBtn = document.getElementById('scopeBtn');
     const inputCount = document.getElementById('inputCharCount');
     const outputCount = document.getElementById('outputCharCount');
     const errorMsg = document.getElementById('errorMessage');
 
-    let currentMode = 'encode'; // 'encode' 或 'decode'
-
-    // --- 核心逻辑 ---
+    let currentMode = 'encode'; // 'encode' | 'decode'
+    let encodeScope = 'component'; // 'component' (全编码) | 'uri' (不编码特殊符号)
 
     // 模式切换
     function toggleMode() {
         currentMode = currentMode === 'encode' ? 'decode' : 'encode';
-        modeBtn.innerText = `当前模式: ${currentMode === 'encode' ? '编码 (Encode)' : '解码 (Decode)'}`;
-        process(); // 切换后立即重算
+        modeBtn.innerText = `模式: ${currentMode === 'encode' ? '编码 (Encode)' : '解码 (Decode)'}`;
+        
+        // 解码模式下禁用范围选择按钮
+        scopeBtn.disabled = (currentMode === 'decode');
+        process();
     }
 
-    // 处理函数（支持多行批量处理）
+    // 核心逻辑：切换编码范围
+    function toggleScope() {
+        if (currentMode === 'decode') return;
+        encodeScope = encodeScope === 'component' ? 'uri' : 'component';
+        scopeBtn.innerText = `范围: ${encodeScope === 'component' ? '全字符编码' : '保留特殊符号'}`;
+        process();
+    }
+
+    // 处理函数
     function process() {
         const input = inputText.value;
-        inputCount.innerText = `字符数: ${input.length}`;
+        inputCount.innerText = `字符: ${input.length}`;
         errorMsg.style.display = 'none';
 
         if (!input) {
             outputText.value = '';
-            outputCount.innerText = '字符数: 0';
+            outputCount.innerText = '字符: 0';
             return;
         }
 
@@ -240,24 +209,25 @@
             const lines = input.split('\n');
             const result = lines.map(line => {
                 if (currentMode === 'encode') {
-                    // 使用 encodeURIComponent 确保全面编码
-                    return encodeURIComponent(line);
+                    // 使用 encodeURI 不会对 : / ? @ & = 等符号编码
+                    // 使用 encodeURIComponent 则会全部编码
+                    return encodeScope === 'component' 
+                        ? encodeURIComponent(line) 
+                        : encodeURI(line);
                 } else {
-                    // 解码
                     return decodeURIComponent(line.replace(/\+/g, ' '));
                 }
             }).join('\n');
 
             outputText.value = result;
-            outputCount.innerText = `字符数: ${result.length}`;
+            outputCount.innerText = `字符: ${result.length}`;
         } catch (e) {
             errorMsg.style.display = 'block';
-            outputText.value = '解析失败，请检查输入格式。';
+            outputText.value = '解析错误，请检查输入格式。';
         }
     }
 
-    // --- 功能辅助 ---
-
+    // 功能辅助
     function clearAll() {
         inputText.value = '';
         process();
@@ -268,13 +238,11 @@
         if (!outputText.value) return;
         try {
             await navigator.clipboard.writeText(outputText.value);
-            const originalBtnText = document.querySelector('button[onclick="copyOutput()"]').innerText;
-            const btn = document.querySelector('button[onclick="copyOutput()"]');
+            const btn = document.getElementById('copyBtn');
+            const oldText = btn.innerText;
             btn.innerText = '✅ 已复制';
-            setTimeout(() => btn.innerText = '复制结果', 1500);
-        } catch (err) {
-            alert('复制失败，请手动选择复制');
-        }
+            setTimeout(() => btn.innerText = oldText, 1500);
+        } catch (err) { alert('复制失败'); }
     }
 
     function loadExample(val) {
@@ -282,37 +250,23 @@
         process();
     }
 
-    // --- 事件监听 ---
-
+    // 事件监听
     inputText.addEventListener('input', process);
-
-    // 主题切换
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', () => {
+    
+    document.getElementById('themeToggle').addEventListener('click', () => {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
     });
 
-    // 快捷键支持
     window.addEventListener('keydown', (e) => {
-        // Ctrl + Enter 复制
-        if (e.ctrlKey && e.key === 'Enter') {
-            copyOutput();
-        }
-        // Alt + S 切换模式
-        if (e.altKey && e.key.toLowerCase() === 's') {
-            toggleMode();
-        }
-        // Alt + C 清空
-        if (e.altKey && e.key.toLowerCase() === 'c') {
-            clearAll();
-        }
+        if (e.ctrlKey && e.key === 'Enter') copyOutput();
+        if (e.altKey && e.key.toLowerCase() === 's') toggleMode();
+        if (e.altKey && e.key.toLowerCase() === 'd') toggleScope();
+        if (e.altKey && e.key.toLowerCase() === 'c') clearAll();
     });
 
-    // 初始化自动聚焦
     window.onload = () => inputText.focus();
 </script>
 
 </body>
-
 </html>
