@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URI TOOL</title>
+    <title>URL TOOL</title>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -38,7 +38,6 @@
             min-height: 100vh;
         }
 
-        /* 容器宽度设定为 1200px */
         .container { 
             width: 100%; 
             max-width: 1200px; 
@@ -84,7 +83,6 @@
         .btn.primary { background: var(--primary-color); color: white; border: none; }
         .btn.primary:hover { background: var(--primary-hover); }
 
-        /* 维持上下堆叠布局 */
         .grid { 
             display: flex;
             flex-direction: column;
@@ -103,22 +101,27 @@
 
         textarea {
             width: 100%;
-            height: 260px; /* 适当增加高度 */
+            height: 260px;
             padding: 15px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             background: var(--input-bg);
             color: var(--text-main);
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 15px; /* 略微调大字号 */
+            font-size: 15px;
             line-height: 1.6;
-            resize: vertical; /* 允许垂直拉伸 */
+            resize: vertical;
             outline: none;
         }
 
         textarea:focus { 
             border-color: var(--primary-color); 
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); 
+        }
+
+        /* 为结果框添加一个轻微的背景区分，提示它是可编辑的 */
+        #outputText {
+            background: rgba(79, 70, 229, 0.02);
         }
 
         .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 8px; display: none; }
@@ -140,12 +143,12 @@
 <div class="container">
     <header>
         <h1>URL 编码</h1>
-        <button class="btn" id="themeToggle" title="切换深浅色模式">🌓 切换主题</button>
+        <button class="btn" id="themeToggle">🌓 切换主题</button>
     </header>
 
     <div class="card">
         <div class="controls">
-            <button class="btn primary" id="modeBtn" onclick="toggleMode()">当前模式: 编码 (Encode)</button>
+            <button class="btn primary" id="modeBtn" onclick="toggleMode()">模式: 编码 (Encode)</button>
             <button class="btn" onclick="clearAll()">✨ 清空全部</button>
             <button class="btn" id="copyBtn" onclick="copyOutput()">📋 复制结果</button>
         </div>
@@ -153,31 +156,31 @@
         <div class="grid">
             <div class="field-group">
                 <div class="label-bar">
-                    <span>输入需要处理的内容 (Source)：</span>
+                    <span>输入内容 (Source)：</span>
                     <span id="inputCharCount">字符数: 0</span>
                 </div>
-                <textarea id="inputText" placeholder="在此粘贴 URL 内容... (URI 模式将保留 : / ? # & = 等符号)" spellcheck="false"></textarea>
+                <textarea id="inputText" placeholder="在此粘贴 URL..." spellcheck="false"></textarea>
             </div>
 
             <div class="field-group">
                 <div class="label-bar">
-                    <span>处理结果 (Result)：</span>
+                    <span>处理结果 (Result - 可自由编辑)：</span>
                     <span id="outputCharCount">字符数: 0</span>
                 </div>
-                <textarea id="outputText" readonly placeholder="结果将实时显示在这里..." spellcheck="false"></textarea>
-                <div id="errorMessage" class="error-msg">❌ 格式错误：解析失败，请检查输入内容</div>
+                <textarea id="outputText" placeholder="结果将实时生成，生成后您可在此手动修改..." spellcheck="false"></textarea>
+                <div id="errorMessage" class="error-msg">❌ 格式错误：解析失败</div>
             </div>
         </div>
 
         <div class="examples">
-            <span style="color: var(--text-muted)">常用快速测试：</span>
-            <span class="example-link" onclick="loadExample('https://google.com/search?q=测试内容&category=工具')">完整 URL</span>
-            <span class="example-link" onclick="loadExample('path/测试/file?id=123#header')">相对路径与锚点</span>
+            <span style="color: var(--text-muted)">示例：</span>
+            <span class="example-link" onclick="loadExample('https://google.com/search?q=测试')">完整 URL</span>
+            <span class="example-link" onclick="loadExample('测试路径/文件.html')">中文路径</span>
         </div>
     </div>
 
     <div class="shortcuts">
-        URI 编码：对非 ASCII 字符编码，保留 URL 结构符号 | 快捷键：Alt+S 切换编解码 | Ctrl+Enter 复制
+        提示：您可以直接在下框修改生成的 URL | Ctrl+Enter 复制 | Alt+S 切换编解码
     </div>
 </div>
 
@@ -191,14 +194,12 @@
 
     let currentMode = 'encode';
 
-    // 编解码模式切换
     function toggleMode() {
         currentMode = currentMode === 'encode' ? 'decode' : 'encode';
-        modeBtn.innerText = `当前模式: ${currentMode === 'encode' ? '编码 (Encode)' : '解码 (Decode)'}`;
+        modeBtn.innerText = `模式: ${currentMode === 'encode' ? '编码 (Encode)' : '解码 (Decode)'}`;
         process();
     }
 
-    // 核心转换逻辑
     function process() {
         const input = inputText.value;
         inputCount.innerText = `字符数: ${input.length}`;
@@ -206,7 +207,7 @@
 
         if (!input) {
             outputText.value = '';
-            outputCount.innerText = '字符数: 0';
+            updateOutputCount();
             return;
         }
 
@@ -214,67 +215,66 @@
             const lines = input.split('\n');
             const result = lines.map(line => {
                 if (currentMode === 'encode') {
-                    // 使用 encodeURI 从而保留特殊符号
                     return encodeURI(line);
                 } else {
-                    // 解码，同时处理常见的 + 号变空格问题
                     return decodeURIComponent(line.replace(/\+/g, ' '));
                 }
             }).join('\n');
 
             outputText.value = result;
-            outputCount.innerText = `字符数: ${result.length}`;
+            updateOutputCount();
         } catch (e) {
             errorMsg.style.display = 'block';
-            outputText.value = '解析失败，请检查输入格式。';
         }
     }
 
-    // 清空
+    // 更新结果框字数统计的独立函数
+    function updateOutputCount() {
+        outputCount.innerText = `字符数: ${outputText.value.length}`;
+    }
+
     function clearAll() {
         inputText.value = '';
+        outputText.value = '';
         process();
         inputText.focus();
     }
 
-    // 复制
     async function copyOutput() {
         if (!outputText.value) return;
         try {
             await navigator.clipboard.writeText(outputText.value);
             const btn = document.getElementById('copyBtn');
             const oldText = btn.innerText;
-            btn.innerText = '✅ 已复制内容';
+            btn.innerText = '✅ 已复制';
             setTimeout(() => btn.innerText = oldText, 1200);
-        } catch (err) { alert('无法访问剪贴板，请手动复制'); }
+        } catch (err) { alert('复制失败'); }
     }
 
-    // 加载示例
     function loadExample(val) {
         inputText.value = val;
         process();
     }
 
-    // 实时监听输入
+    // 事件监听
     inputText.addEventListener('input', process);
     
-    // 主题切换逻辑
+    // 关键：当用户手动编辑结果框时，仅更新字数统计，不触发转换逻辑
+    outputText.addEventListener('input', updateOutputCount);
+
     document.getElementById('themeToggle').addEventListener('click', () => {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
     });
 
-    // 全局快捷键
     window.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'Enter') copyOutput();
         if (e.altKey && e.key.toLowerCase() === 's') toggleMode();
         if (e.altKey && e.key.toLowerCase() === 'c') clearAll();
     });
 
-    // 页面加载后自动聚焦输入框
     window.onload = () => inputText.focus();
 </script>
 
 </body>
 </html>
-
